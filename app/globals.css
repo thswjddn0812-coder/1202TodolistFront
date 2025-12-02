@@ -1,26 +1,71 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Light Mode Defaults */
+  --bg-primary: #ffffff;
+  --bg-secondary: #f3f4f6;
+  --text-primary: #111827;
+  --text-secondary: #4b5563;
+  --accent-color: #3b82f6; /* Blue */
+  --card-bg: rgba(255, 255, 255, 0.8);
+  --card-border: #e5e7eb;
+  --input-bg: #f9fafb;
+  --clock-gradient-from: #2563eb;
+  --clock-gradient-to: #7c3aed;
+  --clock-shadow: rgba(37, 99, 235, 0.2);
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+.dark {
+  /* Dark Mode (Space Theme) Overrides */
+  --bg-primary: #090a0f;
+  --bg-secondary: #1b2735;
+  --text-primary: #ffffff;
+  --text-secondary: #9ca3af;
+  --accent-color: #06b6d4; /* Cyan */
+  --card-bg: rgba(0, 0, 0, 0.3);
+  --card-border: rgba(255, 255, 255, 0.1);
+  --input-bg: rgba(17, 24, 39, 0.8);
+  --clock-gradient-from: #22d3ee;
+  --clock-gradient-to: #a855f7;
+  --clock-shadow: rgba(34, 211, 238, 0.5);
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
+  background: var(--bg-primary);
+  color: var(--text-primary);
   font-family: Arial, Helvetica, sans-serif;
+  transition: background-color 0.3s, color 0.3s;
+}
+
+.bg-space {
+  /* Only show space gradient in dark mode */
+  background: var(--bg-primary);
+}
+
+.dark .bg-space {
+  background: radial-gradient(ellipse at bottom, #1b2735 0%, #090a0f 100%);
+  background-attachment: fixed;
+}
+
+.stars {
+  background: transparent;
+}
+
+.stars {
+  background: transparent;
+}
+
+/* Custom Scrollbar for dark theme */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #0f172a; 
+}
+::-webkit-scrollbar-thumb {
+  background: #334155; 
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #475569; 
 }
