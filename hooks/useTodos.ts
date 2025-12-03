@@ -45,12 +45,27 @@ export function useTodos(date: string) {
   };
 
   const toggleTodo = async (id: number, completed: boolean) => {
+    // 낙관적 업데이트 - 즉시 UI 변경
+    const optimisticUpdate = (prev: Todo[]) => 
+      prev.map((t) => t.id === id ? { ...t, completed: !completed } : t);
+    
+    setTodos(optimisticUpdate);
+    if (selectedTodo?.id === id) {
+      setSelectedTodo(prev => prev ? { ...prev, completed: !completed } : null);
+    }
+
     try {
       const updatedTodo = await updateTodo(id, !completed);
+      // 서버 응답으로 최종 업데이트
       setTodos(prev => prev.map((t) => (t.id === id ? updatedTodo : t)));
       if (selectedTodo?.id === id) setSelectedTodo(updatedTodo);
     } catch (error) {
       console.error('Error updating todo:', error);
+      // 실패 시 롤백
+      setTodos(prev => prev.map((t) => t.id === id ? { ...t, completed } : t));
+      if (selectedTodo?.id === id) {
+        setSelectedTodo(prev => prev ? { ...prev, completed } : null);
+      }
     }
   };
 
@@ -82,6 +97,21 @@ export function useTodos(date: string) {
   };
 
   const toggleSubtask = async (todoId: number, subtaskId: number, completed: boolean) => {
+    // 낙관적 업데이트 - 즉시 UI 변경
+    const optimisticUpdate = (prev: Todo[]) => 
+      prev.map(t => t.id === todoId ? {
+        ...t,
+        subtasks: t.subtasks?.map(s => s.id === subtaskId ? { ...s, completed: !completed } : s)
+      } : t);
+    
+    setTodos(optimisticUpdate);
+    if (selectedTodo?.id === todoId) {
+      setSelectedTodo(prev => prev ? {
+        ...prev,
+        subtasks: prev.subtasks?.map(s => s.id === subtaskId ? { ...s, completed: !completed } : s)
+      } : null);
+    }
+
     try {
       const updatedSubtask = await updateSubtask(todoId, subtaskId, { completed: !completed });
       const updatedTodo = todos.find(t => t.id === todoId);
@@ -95,6 +125,17 @@ export function useTodos(date: string) {
       }
     } catch (error) {
       console.error('Error updating subtask:', error);
+      // 실패 시 롤백
+      setTodos(prev => prev.map(t => t.id === todoId ? {
+        ...t,
+        subtasks: t.subtasks?.map(s => s.id === subtaskId ? { ...s, completed } : s)
+      } : t));
+      if (selectedTodo?.id === todoId) {
+        setSelectedTodo(prev => prev ? {
+          ...prev,
+          subtasks: prev.subtasks?.map(s => s.id === subtaskId ? { ...s, completed } : s)
+        } : null);
+      }
     }
   };
 

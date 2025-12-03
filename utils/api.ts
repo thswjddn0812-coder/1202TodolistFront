@@ -2,85 +2,79 @@ import { Todo, Subtask } from '../types/todo';
 
 export const API_BASE_URL = 'http://localhost:4000';
 
-export const getTodos = async (date?: string): Promise<Todo[]> => {
-  const url = date ? `${API_BASE_URL}/todos?date=${date}` : `${API_BASE_URL}/todos`;
-  const response = await fetch(url);
+// 공통 fetch 유틸리티 - 에러 처리 자동화
+async function fetchClient<T = any>(
+  endpoint: string, 
+  options: RequestInit = {}
+): Promise<T> {
+  const url = `${API_BASE_URL}${endpoint}`;
+  const response = await fetch(url, {
+    headers: {
+      'Content-Type': 'application/json',
+      ...options.headers,
+    },
+    ...options,
+  });
+
   if (!response.ok) {
-    throw new Error('Failed to fetch todos');
+    throw new Error(`API Error: ${response.statusText}`);
   }
+
+  // DELETE 요청은 body가 없을 수 있음
+  if (response.status === 204 || options.method === 'DELETE') {
+    return undefined as T;
+  }
+
   return response.json();
+}
+
+// ===== Todo API =====
+export const getTodos = async (date?: string): Promise<Todo[]> => {
+  const endpoint = date ? `/todos?date=${date}` : '/todos';
+  return fetchClient<Todo[]>(endpoint);
 };
 
 export const createTodo = async (text: string, date?: string): Promise<Todo> => {
-  const response = await fetch(`${API_BASE_URL}/todos`, {
+  return fetchClient<Todo>('/todos', {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
     body: JSON.stringify({ text, date }),
   });
-  if (!response.ok) {
-    throw new Error('Failed to create todo');
-  }
-  return response.json();
 };
 
 export const updateTodo = async (id: number, completed: boolean): Promise<Todo> => {
-  const response = await fetch(`${API_BASE_URL}/todos/${id}`, {
+  return fetchClient<Todo>(`/todos/${id}`, {
     method: 'PATCH',
-    headers: {
-      'Content-Type': 'application/json',
-    },
     body: JSON.stringify({ completed }),
   });
-  if (!response.ok) {
-    throw new Error('Failed to update todo');
-  }
-  return response.json();
 };
 
 export const deleteTodo = async (id: number): Promise<void> => {
-  const response = await fetch(`${API_BASE_URL}/todos/${id}`, {
+  return fetchClient<void>(`/todos/${id}`, {
     method: 'DELETE',
   });
-  if (!response.ok) {
-    throw new Error('Failed to delete todo');
-  }
 };
 
+// ===== Subtask API =====
 export const createSubtask = async (todoId: number, text: string): Promise<Subtask> => {
-  const response = await fetch(`${API_BASE_URL}/todos/${todoId}/subtasks`, {
+  return fetchClient<Subtask>(`/todos/${todoId}/subtasks`, {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
     body: JSON.stringify({ text }),
   });
-  if (!response.ok) {
-    throw new Error('Failed to create subtask');
-  }
-  return response.json();
 };
 
-export const updateSubtask = async (todoId: number, subtaskId: number, updates: { completed?: boolean; text?: string }): Promise<Subtask> => {
-  const response = await fetch(`${API_BASE_URL}/todos/${todoId}/subtasks/${subtaskId}`, {
+export const updateSubtask = async (
+  todoId: number, 
+  subtaskId: number, 
+  updates: { completed?: boolean; text?: string }
+): Promise<Subtask> => {
+  return fetchClient<Subtask>(`/todos/${todoId}/subtasks/${subtaskId}`, {
     method: 'PATCH',
-    headers: {
-      'Content-Type': 'application/json',
-    },
     body: JSON.stringify(updates),
   });
-  if (!response.ok) {
-    throw new Error('Failed to update subtask');
-  }
-  return response.json();
 };
 
 export const deleteSubtask = async (todoId: number, subtaskId: number): Promise<void> => {
-  const response = await fetch(`${API_BASE_URL}/todos/${todoId}/subtasks/${subtaskId}`, {
+  return fetchClient<void>(`/todos/${todoId}/subtasks/${subtaskId}`, {
     method: 'DELETE',
   });
-  if (!response.ok) {
-    throw new Error('Failed to delete subtask');
-  }
 };

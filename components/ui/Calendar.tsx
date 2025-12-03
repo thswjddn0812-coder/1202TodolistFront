@@ -1,6 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
+import { useTodoCount } from '@/hooks/useTodoCount';
 
 interface CalendarProps {
   selectedDate: string;
@@ -12,6 +13,19 @@ export default function Calendar({ selectedDate, onSelectDate }: CalendarProps) 
 
   const daysInMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0).getDate();
   const firstDayOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1).getDay();
+
+  // 이번 달의 모든 날짜 생성
+  const monthDates = useMemo(() => {
+    const dates = [];
+    for (let day = 1; day <= daysInMonth; day++) {
+      const dateStr = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+      dates.push(dateStr);
+    }
+    return dates;
+  }, [currentDate, daysInMonth]);
+
+  // 이번 달의 Todo 개수 조회
+  const { counts } = useTodoCount(monthDates);
 
   const handlePrevMonth = () => {
     setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1));
@@ -30,6 +44,7 @@ export default function Calendar({ selectedDate, onSelectDate }: CalendarProps) 
       const dateStr = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
       const isSelected = selectedDate === dateStr;
       const isToday = dateStr === new Date().toISOString().split('T')[0];
+      const todoCount = counts[dateStr] || 0;
 
       days.push(
         <button
@@ -44,6 +59,15 @@ export default function Calendar({ selectedDate, onSelectDate }: CalendarProps) 
           `}
         >
           {day}
+          {todoCount > 0 && (
+            <div className={`
+              absolute -bottom-0.5 left-1/2 transform -translate-x-1/2 
+              w-1 h-1 rounded-full
+              ${isSelected ? 'bg-white' : 'bg-[var(--accent-color)]'}
+            `}>
+              <span className="sr-only">{todoCount} todos</span>
+            </div>
+          )}
         </button>
       );
     }

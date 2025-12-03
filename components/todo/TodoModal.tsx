@@ -28,7 +28,7 @@ export default function TodoModal({ todo, onClose, onAddSubtask, onToggleSubtask
             <div className="p-6 border-b border-[var(--card-border)] flex justify-between items-start bg-white/5">
                 <div>
                     <h3 className="text-xl font-bold text-[var(--text-primary)] mb-1">{todo.text}</h3>
-                    <p className="text-sm text-[var(--accent-color)] uppercase tracking-widest">Mission Details</p>
+                    <p className="text-sm text-[var(--accent-color)] uppercase tracking-widest">할 일 상세</p>
                 </div>
                 <button onClick={onClose} className="text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors">
                     <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -39,7 +39,7 @@ export default function TodoModal({ todo, onClose, onAddSubtask, onToggleSubtask
 
             <div className="p-6 overflow-y-auto">
                 <div className="mb-6">
-                    <h4 className="text-xs font-bold text-[var(--text-secondary)] uppercase tracking-widest mb-3">Sub-objectives</h4>
+                    <h4 className="text-xs font-bold text-[var(--text-secondary)] uppercase tracking-widest mb-3">세부 목표</h4>
                     <div className="space-y-2">
                         {todo.subtasks?.map((subtask) => (
                             <div key={subtask.id} className="flex items-center gap-3 p-3 rounded-lg bg-[var(--bg-secondary)] border border-[var(--card-border)] hover:border-[var(--card-border)] transition-colors group">
@@ -71,7 +71,7 @@ export default function TodoModal({ todo, onClose, onAddSubtask, onToggleSubtask
                             </div>
                         ))}
                         {(!todo.subtasks || todo.subtasks.length === 0) && (
-                            <p className="text-[var(--text-secondary)] text-sm italic">No sub-objectives defined.</p>
+                            <p className="text-[var(--text-secondary)] text-sm italic">하위 목표가 없습니다.</p>
                         )}
                     </div>
                 </div>
@@ -81,7 +81,7 @@ export default function TodoModal({ todo, onClose, onAddSubtask, onToggleSubtask
                         type="text"
                         value={newSubtaskText}
                         onChange={(e) => setNewSubtaskText(e.target.value)}
-                        placeholder="Add sub-objective..."
+                        placeholder="하위 목표 추가..."
                         className="flex-1 bg-[var(--input-bg)] border border-[var(--card-border)] rounded-lg px-4 py-2 text-sm text-[var(--text-primary)] placeholder-[var(--text-secondary)] focus:outline-none focus:border-[var(--accent-color)] transition-colors"
                     />
                     <button
@@ -89,7 +89,7 @@ export default function TodoModal({ todo, onClose, onAddSubtask, onToggleSubtask
                         disabled={!newSubtaskText.trim()}
                         className="bg-[var(--accent-color)] hover:opacity-90 text-white px-4 py-2 rounded-lg text-sm font-bold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                        ADD
+                        추가
                     </button>
                 </form>
             </div>
