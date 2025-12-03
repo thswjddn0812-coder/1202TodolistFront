@@ -27,7 +27,7 @@ export const createTodo = async (text: string, date?: string): Promise<Todo> => 
 
 export const updateTodo = async (id: number, completed: boolean): Promise<Todo> => {
   const response = await fetch(`${API_BASE_URL}/todos/${id}`, {
-    method: 'PUT',
+    method: 'PATCH',
     headers: {
       'Content-Type': 'application/json',
     },
@@ -64,7 +64,7 @@ export const createSubtask = async (todoId: number, text: string): Promise<Subta
 
 export const updateSubtask = async (todoId: number, subtaskId: number, updates: { completed?: boolean; text?: string }): Promise<Subtask> => {
   const response = await fetch(`${API_BASE_URL}/todos/${todoId}/subtasks/${subtaskId}`, {
-    method: 'PUT',
+    method: 'PATCH',
     headers: {
       'Content-Type': 'application/json',
     },
