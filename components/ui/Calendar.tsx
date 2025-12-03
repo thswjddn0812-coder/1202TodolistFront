@@ -27,6 +27,26 @@ export default function Calendar({ selectedDate, onSelectDate }: CalendarProps) 
   // 이번 달의 Todo 개수 조회
   const { counts } = useTodoCount(monthDates);
 
+  // 한국 공휴일 확인 (간단한 버전 - 주요 공휴일만)
+  const isHoliday = (dateStr: string) => {
+    const [year, month, day] = dateStr.split('-').map(Number);
+    
+    // 고정 공휴일
+    const fixedHolidays = [
+      '01-01', // 신정
+      '03-01', // 삼일절
+      '05-05', // 어린이날
+      '06-06', // 현충일
+      '08-15', // 광복절
+      '10-03', // 개천절
+      '10-09', // 한글날
+      '12-25', // 크리스마스
+    ];
+    
+    const monthDay = `${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+    return fixedHolidays.includes(monthDay);
+  };
+
   const handlePrevMonth = () => {
     setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1));
   };
@@ -45,6 +65,13 @@ export default function Calendar({ selectedDate, onSelectDate }: CalendarProps) 
       const isSelected = selectedDate === dateStr;
       const isToday = dateStr === new Date().toISOString().split('T')[0];
       const todoCount = counts[dateStr] || 0;
+      
+      // 일요일, 토요일, 공휴일 확인
+      const dateObj = new Date(dateStr);
+      const dayOfWeek = dateObj.getDay();
+      const isSunday = dayOfWeek === 0;
+      const isSaturday = dayOfWeek === 6;
+      const isRedDay = isSunday || isHoliday(dateStr);
 
       days.push(
         <button
@@ -53,7 +80,11 @@ export default function Calendar({ selectedDate, onSelectDate }: CalendarProps) 
           className={`h-10 w-10 rounded-full flex items-center justify-center text-sm transition-all duration-300 relative
             ${isSelected 
               ? 'bg-[var(--accent-color)] text-white font-bold shadow-[0_0_15px_var(--clock-shadow)] scale-110' 
-              : 'text-[var(--text-secondary)] hover:bg-[var(--bg-secondary)] hover:text-[var(--text-primary)]'
+              : isRedDay
+                ? 'text-red-500 hover:bg-[var(--bg-secondary)] hover:text-red-600'
+                : isSaturday
+                  ? 'text-blue-500 hover:bg-[var(--bg-secondary)] hover:text-blue-600'
+                  : 'text-[var(--text-secondary)] hover:bg-[var(--bg-secondary)] hover:text-[var(--text-primary)]'
             }
             ${isToday && !isSelected ? 'border border-[var(--accent-color)] text-[var(--accent-color)]' : ''}
           `}
@@ -88,8 +119,10 @@ export default function Calendar({ selectedDate, onSelectDate }: CalendarProps) 
         </button>
       </div>
       <div className="grid grid-cols-7 gap-1 text-center mb-2">
-        {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
-          <div key={day} className="text-xs text-[var(--text-secondary)] uppercase tracking-widest">{day}</div>
+        {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day, index) => (
+          <div key={day} className={`text-xs uppercase tracking-widest ${
+            index === 0 ? 'text-red-500' : index === 6 ? 'text-blue-500' : 'text-[var(--text-secondary)]'
+          }`}>{day}</div>
         ))}
       </div>
       <div className="grid grid-cols-7 gap-1 place-items-center">
