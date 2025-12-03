@@ -99,27 +99,62 @@ export function useTodos(date: string) {
   const toggleSubtask = async (todoId: number, subtaskId: number, completed: boolean) => {
     // 낙관적 업데이트 - 즉시 UI 변경
     const optimisticUpdate = (prev: Todo[]) => 
-      prev.map(t => t.id === todoId ? {
-        ...t,
-        subtasks: t.subtasks?.map(s => s.id === subtaskId ? { ...s, completed: !completed } : s)
-      } : t);
+      prev.map(t => {
+        if (t.id !== todoId) return t;
+        
+        const updatedSubtasks = t.subtasks?.map(s => 
+          s.id === subtaskId ? { ...s, completed: !completed } : s
+        );
+        
+        // 모든 서브태스크가 완료되었는지 확인
+        const allSubtasksCompleted = updatedSubtasks?.every(s => s.completed) ?? false;
+        const hasSubtasks = (updatedSubtasks?.length ?? 0) > 0;
+        
+        return {
+          ...t,
+          subtasks: updatedSubtasks,
+          // 서브태스크가 있고 모두 완료되면 Todo도 완료
+          completed: hasSubtasks && allSubtasksCompleted ? true : t.completed
+        };
+      });
     
     setTodos(optimisticUpdate);
     if (selectedTodo?.id === todoId) {
-      setSelectedTodo(prev => prev ? {
-        ...prev,
-        subtasks: prev.subtasks?.map(s => s.id === subtaskId ? { ...s, completed: !completed } : s)
-      } : null);
+      setSelectedTodo(prev => {
+        if (!prev) return null;
+        const updatedSubtasks = prev.subtasks?.map(s => 
+          s.id === subtaskId ? { ...s, completed: !completed } : s
+        );
+        const allSubtasksCompleted = updatedSubtasks?.every(s => s.completed) ?? false;
+        const hasSubtasks = (updatedSubtasks?.length ?? 0) > 0;
+        
+        return {
+          ...prev,
+          subtasks: updatedSubtasks,
+          completed: hasSubtasks && allSubtasksCompleted ? true : prev.completed
+        };
+      });
     }
 
     try {
       const updatedSubtask = await updateSubtask(todoId, subtaskId, { completed: !completed });
       const updatedTodo = todos.find(t => t.id === todoId);
       if (updatedTodo) {
-          const newTodo = {
+          const newSubtasks = updatedTodo.subtasks?.map(s => s.id === subtaskId ? updatedSubtask : s);
+          const allSubtasksCompleted = newSubtasks?.every(s => s.completed) ?? false;
+          const hasSubtasks = (newSubtasks?.length ?? 0) > 0;
+          
+          let newTodo = {
             ...updatedTodo,
-            subtasks: updatedTodo.subtasks?.map(s => s.id === subtaskId ? updatedSubtask : s)
+            subtasks: newSubtasks
           };
+
+          // 모든 서브태스크가 완료되면 Todo도 완료 처리
+          if (hasSubtasks && allSubtasksCompleted && !newTodo.completed) {
+            const completedTodo = await updateTodo(todoId, true);
+            newTodo = { ...completedTodo, subtasks: newSubtasks };
+          }
+          
           setTodos(prev => prev.map(t => t.id === todoId ? newTodo : t));
           if (selectedTodo?.id === todoId) setSelectedTodo(newTodo);
       }
