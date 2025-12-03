@@ -4,7 +4,6 @@ import { getTodos, createTodo, updateTodo, deleteTodo, createSubtask, updateSubt
 
 export function useTodos(date: string) {
   const [todos, setTodos] = useState<Todo[]>([]);
-  const [selectedTodo, setSelectedTodo] = useState<Todo | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   const fetchTodos = useCallback(async () => {
@@ -12,22 +11,12 @@ export function useTodos(date: string) {
     try {
       const data = await getTodos(date);
       setTodos(data);
-      if (selectedTodo) {
-        // Refresh selected todo if it exists in the new list
-        const updatedSelected = data.find(t => t.id === selectedTodo.id);
-        // If not found (e.g. date changed), we might want to keep it or clear it.
-        // For now, if we are just refreshing data for the same date, it should be there.
-        // If date changed, this runs.
-        if (updatedSelected) {
-            setSelectedTodo(updatedSelected);
-        }
-      }
     } catch (error) {
       console.error('Error fetching todos:', error);
     } finally {
       setIsLoading(false);
     }
-  }, [date, selectedTodo?.id]); // Depend on selectedTodo.id to know which one to refresh
+  }, [date]);
 
   useEffect(() => {
     fetchTodos();
@@ -50,22 +39,15 @@ export function useTodos(date: string) {
       prev.map((t) => t.id === id ? { ...t, completed: !completed } : t);
     
     setTodos(optimisticUpdate);
-    if (selectedTodo?.id === id) {
-      setSelectedTodo(prev => prev ? { ...prev, completed: !completed } : null);
-    }
 
     try {
       const updatedTodo = await updateTodo(id, !completed);
       // 서버 응답으로 최종 업데이트
       setTodos(prev => prev.map((t) => (t.id === id ? updatedTodo : t)));
-      if (selectedTodo?.id === id) setSelectedTodo(updatedTodo);
     } catch (error) {
       console.error('Error updating todo:', error);
       // 실패 시 롤백
       setTodos(prev => prev.map((t) => t.id === id ? { ...t, completed } : t));
-      if (selectedTodo?.id === id) {
-        setSelectedTodo(prev => prev ? { ...prev, completed } : null);
-      }
     }
   };
 
@@ -73,7 +55,6 @@ export function useTodos(date: string) {
     try {
       await deleteTodo(id);
       setTodos(prev => prev.filter((t) => t.id !== id));
-      if (selectedTodo?.id === id) setSelectedTodo(null);
     } catch (error) {
       console.error('Error deleting todo:', error);
     }
@@ -89,7 +70,6 @@ export function useTodos(date: string) {
             subtasks: [...(updatedTodo.subtasks || []), newSubtask]
           };
           setTodos(prev => prev.map(t => t.id === todoId ? newTodo : t));
-          if (selectedTodo?.id === todoId) setSelectedTodo(newTodo);
       }
     } catch (error) {
       console.error('Error creating subtask:', error);
@@ -119,22 +99,6 @@ export function useTodos(date: string) {
       });
     
     setTodos(optimisticUpdate);
-    if (selectedTodo?.id === todoId) {
-      setSelectedTodo(prev => {
-        if (!prev) return null;
-        const updatedSubtasks = prev.subtasks?.map(s => 
-          s.id === subtaskId ? { ...s, completed: !completed } : s
-        );
-        const allSubtasksCompleted = updatedSubtasks?.every(s => s.completed) ?? false;
-        const hasSubtasks = (updatedSubtasks?.length ?? 0) > 0;
-        
-        return {
-          ...prev,
-          subtasks: updatedSubtasks,
-          completed: hasSubtasks && allSubtasksCompleted ? true : prev.completed
-        };
-      });
-    }
 
     try {
       const updatedSubtask = await updateSubtask(todoId, subtaskId, { completed: !completed });
@@ -156,21 +120,14 @@ export function useTodos(date: string) {
           }
           
           setTodos(prev => prev.map(t => t.id === todoId ? newTodo : t));
-          if (selectedTodo?.id === todoId) setSelectedTodo(newTodo);
       }
     } catch (error) {
       console.error('Error updating subtask:', error);
       // 실패 시 롤백
       setTodos(prev => prev.map(t => t.id === todoId ? {
         ...t,
-        subtasks: t.subtasks?.map(s => s.id === subtaskId ? { ...s, completed } : s)
+        subtasks: t.subtasks?.map((s: Subtask) => s.id === subtaskId ? { ...s, completed } : s)
       } : t));
-      if (selectedTodo?.id === todoId) {
-        setSelectedTodo(prev => prev ? {
-          ...prev,
-          subtasks: prev.subtasks?.map(s => s.id === subtaskId ? { ...s, completed } : s)
-        } : null);
-      }
     }
   };
 
@@ -193,9 +150,7 @@ export function useTodos(date: string) {
 
   return {
     todos,
-    selectedTodo,
     isLoading,
-    setSelectedTodo,
     setTodos,
     addTodo,
     toggleTodo,
