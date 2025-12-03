@@ -8,7 +8,6 @@ import StarryBackground from '@/components/ui/StarryBackground';
 import WeekNavigation from '@/components/ui/WeekNavigation';
 import TodoInput from '@/components/todo/TodoInput';
 import TodoList from '@/components/todo/TodoList';
-import TodoModal from '@/components/todo/TodoModal';
 import { useTodos } from '@/hooks/useTodos';
 import { useDragAndDrop } from '@/hooks/useDragAndDrop';
 
@@ -18,9 +17,7 @@ export default function Home() {
   
   const { 
     todos, 
-    selectedTodo, 
     isLoading, 
-    setSelectedTodo, 
     addTodo, 
     toggleTodo, 
     removeTodo, 
@@ -75,23 +72,14 @@ export default function Home() {
                   onDragEnd={handleDragEnd}
                   onToggle={toggleTodo}
                   onDelete={removeTodo}
-                  onSelect={setSelectedTodo}
+                  onAddSubtask={addSubtask}
+                  onToggleSubtask={toggleSubtask}
+                  onDeleteSubtask={removeSubtask}
                 />
             </section>
         </div>
 
       </div>
-
-      {/* Detail Modal */}
-      {selectedTodo && (
-        <TodoModal 
-            todo={selectedTodo}
-            onClose={() => setSelectedTodo(null)}
-            onAddSubtask={addSubtask}
-            onToggleSubtask={toggleSubtask}
-            onDeleteSubtask={removeSubtask}
-        />
-      )}
     </main>
   );
 }

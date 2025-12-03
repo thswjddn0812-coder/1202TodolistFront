@@ -21,7 +21,9 @@ interface TodoListProps {
   onDragEnd: (event: DragEndEvent) => void;
   onToggle: (id: number, completed: boolean) => void;
   onDelete: (id: number) => void;
-  onSelect: (todo: Todo) => void;
+  onAddSubtask: (todoId: number, text: string) => void;
+  onToggleSubtask: (todoId: number, subtaskId: number, completed: boolean) => void;
+  onDeleteSubtask: (todoId: number, subtaskId: number) => void;
 }
 
 export default function TodoList({ 
@@ -29,8 +31,10 @@ export default function TodoList({
   isLoading, 
   onDragEnd, 
   onToggle, 
-  onDelete, 
-  onSelect 
+  onDelete,
+  onAddSubtask,
+  onToggleSubtask,
+  onDeleteSubtask
 }: TodoListProps) {
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -62,8 +66,10 @@ export default function TodoList({
                 key={todo.id} 
                 todo={todo} 
                 onToggle={onToggle} 
-                onDelete={onDelete} 
-                onClick={onSelect} 
+                onDelete={onDelete}
+                onAddSubtask={onAddSubtask}
+                onToggleSubtask={onToggleSubtask}
+                onDeleteSubtask={onDeleteSubtask}
               />
             ))}
           </SortableContext>

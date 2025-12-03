@@ -1,6 +1,6 @@
 import { Todo, Subtask } from '../types/todo';
 
-export const API_BASE_URL = 'http://localhost:4000';
+export const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
 
 // 공통 fetch 유틸리티 - 에러 처리 자동화
 async function fetchClient<T = any>(
