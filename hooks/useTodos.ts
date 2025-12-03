@@ -141,7 +141,6 @@ export function useTodos(date: string) {
             subtasks: updatedTodo.subtasks?.filter(s => s.id !== subtaskId)
           };
           setTodos(prev => prev.map(t => t.id === todoId ? newTodo : t));
-          if (selectedTodo?.id === todoId) setSelectedTodo(newTodo);
       }
     } catch (error) {
       console.error('Error deleting subtask:', error);
